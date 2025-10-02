@@ -8,10 +8,22 @@
 <body>
   <h1>Plataforma de Entrenamiento</h1>
 
-  <section>
-    <h2>Usuarios</h2>
-    <ul id="lista-usuarios"></ul>
-  </section>
+<section>
+  <h2>Usuarios</h2>
+
+  <form id="form-usuario">
+    <input type="text" id="nombre-usuario" placeholder="Nombre" required>
+    <select id="rol-usuario" required>
+      <option value="" disabled selected>Seleccionar rol</option>
+      <option value="admin">Admin</option>
+      <option value="entrenador">Entrenador</option>
+      <option value="cliente">Cliente</option>
+    </select>
+    <button type="submit">Agregar Usuario</button>
+  </form>
+
+  <ul id="lista-usuarios"></ul>
+</section>
 
   <section>
     <h2>Ejercicios</h2>
