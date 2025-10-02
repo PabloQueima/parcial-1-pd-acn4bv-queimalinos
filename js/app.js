@@ -27,12 +27,43 @@ if (!StorageService.load("ejercicios")) {
 // --- Funciones render ---
 function renderEjercicios() {
   const ejerciciosGuardados = StorageService.load("ejercicios", []);
-  DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, e => `${e.nombre} - ${e.descripcion}`);
+
+  DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, (e) => {
+    const li = document.createElement("li");
+    li.textContent = `${e.nombre} - ${e.descripcion} `;
+
+    // Botón eliminar
+    const btn = document.createElement("button");
+    btn.textContent = "❌";
+    btn.style.marginLeft = "10px";
+
+    // Callback de confirmación
+    btn.addEventListener("click", () => {
+      if (confirm(`¿Eliminar el ejercicio "${e.nombre}"?`)) {
+        eliminarEjercicio(e.id);
+      }
+    });
+
+    li.appendChild(btn);
+    return li;
+  });
 }
 
 function renderUsuarios() {
   const usuariosGuardados = StorageService.load("usuarios", []);
-  DOMUtils.renderList("lista-usuarios", usuariosGuardados, u => `${u.nombre} (${u.rol})`);
+  DOMUtils.renderList("lista-usuarios", usuariosGuardados, (u) => {
+    const li = document.createElement("li");
+    li.textContent = `${u.nombre} (${u.rol})`;
+    return li;
+  });
+}
+
+// --- CRUD Ejercicios ---
+function eliminarEjercicio(id) {
+  let ejercicios = StorageService.load("ejercicios", []);
+  ejercicios = ejercicios.filter(e => e.id !== id);
+  StorageService.save("ejercicios", ejercicios);
+  renderEjercicios();
 }
 
 // --- Formulario ---

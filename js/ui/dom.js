@@ -5,8 +5,7 @@ export const DOMUtils = {
     container.innerHTML = "";
 
     items.forEach(item => {
-      const li = document.createElement("li");
-      li.textContent = rendererFn(item);
+      const li = rendererFn(item);
       container.appendChild(li);
     });
   }
