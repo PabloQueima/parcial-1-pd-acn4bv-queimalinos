@@ -9,12 +9,13 @@
   <h1>Plataforma de Entrenamiento</h1>
 
   <div class="container">
-    <!-- Usuarios -->
+      <!-- Usuarios -->
     <section>
       <h2>Usuarios</h2>
+      <input type="text" id="filtro-usuarios" placeholder="Buscar usuario...">
       <form id="form-usuario">
         <input type="text" id="nombre-usuario" placeholder="Nombre" required>
-        <select id="rol-usuario" required>
+            <select id="rol-usuario" required>
           <option value="" disabled selected>Seleccionar rol</option>
           <option value="admin">Admin</option>
           <option value="entrenador">Entrenador</option>
@@ -28,14 +29,15 @@
     <!-- Ejercicios -->
     <section>
       <h2>Ejercicios</h2>
+      <input type="text" id="filtro-ejercicios" placeholder="Buscar ejercicio...">
       <form id="form-ejercicio">
-        <input type="text" id="nombre-ejercicio" placeholder="Nombre del ejercicio" required>
+        <input type="text" id="nombre-ejercicio" placeholder="Nombre" required>
         <input type="text" id="descripcion-ejercicio" placeholder="Descripción" required>
         <button type="submit">Agregar Ejercicio</button>
       </form>
       <ul id="lista-ejercicios"></ul>
     </section>
-  </div>
+
 
   <script type="module" src="js/app.js"></script>
 </body>

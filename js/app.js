@@ -8,23 +8,39 @@ import { DOMUtils } from "./ui/dom.js";
 let editandoUsuarioId = null;
 let editandoEjercicioId = null;
 
-// --- Funciones auxiliares ---
+// --- Estado de filtros ---
+let filtroUsuarios = "";
+let filtroEjercicios = "";
+
+// --- Filtrado dinámico ---
+document.getElementById("filtro-usuarios").addEventListener("keyup", (e) => {
+  filtroUsuarios = e.target.value.toLowerCase();
+  renderUsuarios();
+});
+
+document.getElementById("filtro-ejercicios").addEventListener("keyup", (e) => {
+  filtroEjercicios = e.target.value.toLowerCase();
+  renderEjercicios();
+});
+
+// --- Render usuarios con filtro ---
 function renderUsuarios() {
-  const usuariosGuardados = StorageService.load("usuarios", []);
+  let usuariosGuardados = StorageService.load("usuarios", []);
+  if (filtroUsuarios) {
+    usuariosGuardados = usuariosGuardados.filter(u =>
+      u.nombre.toLowerCase().includes(filtroUsuarios) || u.rol.toLowerCase().includes(filtroUsuarios)
+    );
+  }
 
   DOMUtils.renderList("lista-usuarios", usuariosGuardados, (u) => {
     const li = document.createElement("li");
     li.textContent = `${u.nombre} (${u.rol}) `;
 
-    // Botón editar
     const btnEdit = document.createElement("button");
     btnEdit.textContent = "Editar";
     btnEdit.style.marginLeft = "10px";
-    btnEdit.addEventListener("click", () => {
-      cargarFormularioUsuario(u);
-    });
+    btnEdit.addEventListener("click", () => cargarFormularioUsuario(u));
 
-    // Botón eliminar
     const btnDelete = document.createElement("button");
     btnDelete.textContent = "Eliminar";
     btnDelete.style.marginLeft = "5px";
@@ -75,10 +91,8 @@ function cargarFormularioUsuario(usuario) {
 
 document.getElementById("form-usuario").addEventListener("submit", (event) => {
   event.preventDefault();
-
   const nombre = document.getElementById("nombre-usuario").value.trim();
   const rol = document.getElementById("rol-usuario").value;
-
   if (!nombre || !rol) return;
 
   if (editandoUsuarioId) {
@@ -88,35 +102,35 @@ document.getElementById("form-usuario").addEventListener("submit", (event) => {
   } else {
     guardarUsuario(nombre, rol);
   }
-
   event.target.reset();
 });
 
-// --- Funciones auxiliares para ejercicios ---
+// --- Render ejercicios con filtro ---
 function renderEjercicios() {
-  const ejerciciosGuardados = StorageService.load("ejercicios", []);
+  let ejerciciosGuardados = StorageService.load("ejercicios", []);
+  if (filtroEjercicios) {
+    ejerciciosGuardados = ejerciciosGuardados.filter(e =>
+      e.nombre.toLowerCase().includes(filtroEjercicios) || e.descripcion.toLowerCase().includes(filtroEjercicios)
+    );
+  }
 
   DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, (e) => {
     const li = document.createElement("li");
     li.textContent = `${e.nombre} - ${e.descripcion} `;
 
-    // Botón editar
     const btnEdit = document.createElement("button");
     btnEdit.textContent = "Editar";
-    btnEdit.addEventListener("click", () => {
-      cargarFormularioEjercicio(e);
-    });
     btnEdit.style.marginLeft = "10px";
+    btnEdit.addEventListener("click", () => cargarFormularioEjercicio(e));
 
-    // Botón eliminar
     const btnDelete = document.createElement("button");
     btnDelete.textContent = "Eliminar";
+    btnDelete.style.marginLeft = "5px";
     btnDelete.addEventListener("click", () => {
       if (confirm(`¿Eliminar el ejercicio "${e.nombre}"?`)) {
         eliminarEjercicio(e.id);
       }
     });
-    btnDelete.style.marginLeft = "5px";
 
     li.appendChild(btnEdit);
     li.appendChild(btnDelete);
@@ -159,10 +173,8 @@ function cargarFormularioEjercicio(ejercicio) {
 
 document.getElementById("form-ejercicio").addEventListener("submit", (event) => {
   event.preventDefault();
-
   const nombre = document.getElementById("nombre-ejercicio").value.trim();
   const descripcion = document.getElementById("descripcion-ejercicio").value.trim();
-
   if (!nombre || !descripcion) return;
 
   if (editandoEjercicioId) {
@@ -172,11 +184,10 @@ document.getElementById("form-ejercicio").addEventListener("submit", (event) => 
   } else {
     guardarEjercicio(nombre, descripcion);
   }
-
   event.target.reset();
 });
 
-// --- Render inicial ---
+// --- Inicialización demo ---
 if (!StorageService.load("usuarios")) {
   const usuariosDemo = [
     new Usuario(1, "Ana", "admin"),
@@ -194,5 +205,6 @@ if (!StorageService.load("ejercicios")) {
   StorageService.save("ejercicios", ejerciciosDemo);
 }
 
+// --- Render inicial ---
 renderUsuarios();
 renderEjercicios();
