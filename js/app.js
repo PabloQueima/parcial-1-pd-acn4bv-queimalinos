@@ -18,7 +18,7 @@ function renderUsuarios() {
 
     // Botón editar
     const btnEdit = document.createElement("button");
-    btnEdit.textContent = "✏️";
+    btnEdit.textContent = "Editar";
     btnEdit.style.marginLeft = "10px";
     btnEdit.addEventListener("click", () => {
       cargarFormularioUsuario(u);
@@ -26,7 +26,7 @@ function renderUsuarios() {
 
     // Botón eliminar
     const btnDelete = document.createElement("button");
-    btnDelete.textContent = "❌";
+    btnDelete.textContent = "Eliminar";
     btnDelete.style.marginLeft = "5px";
     btnDelete.addEventListener("click", () => {
       if (confirm(`¿Eliminar el usuario "${u.nombre}"?`)) {
@@ -92,6 +92,90 @@ document.getElementById("form-usuario").addEventListener("submit", (event) => {
   event.target.reset();
 });
 
+// --- Funciones auxiliares para ejercicios ---
+function renderEjercicios() {
+  const ejerciciosGuardados = StorageService.load("ejercicios", []);
+
+  DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, (e) => {
+    const li = document.createElement("li");
+    li.textContent = `${e.nombre} - ${e.descripcion} `;
+
+    // Botón editar
+    const btnEdit = document.createElement("button");
+    btnEdit.textContent = "Editar";
+    btnEdit.addEventListener("click", () => {
+      cargarFormularioEjercicio(e);
+    });
+    btnEdit.style.marginLeft = "10px";
+
+    // Botón eliminar
+    const btnDelete = document.createElement("button");
+    btnDelete.textContent = "Eliminar";
+    btnDelete.addEventListener("click", () => {
+      if (confirm(`¿Eliminar el ejercicio "${e.nombre}"?`)) {
+        eliminarEjercicio(e.id);
+      }
+    });
+    btnDelete.style.marginLeft = "5px";
+
+    li.appendChild(btnEdit);
+    li.appendChild(btnDelete);
+    return li;
+  });
+}
+
+// --- CRUD ejercicios ---
+function guardarEjercicio(nombre, descripcion) {
+  const ejercicios = StorageService.load("ejercicios", []);
+  const nuevoEjercicio = new Ejercicio(Date.now(), nombre, descripcion);
+  ejercicios.push(nuevoEjercicio);
+  StorageService.save("ejercicios", ejercicios);
+  renderEjercicios();
+}
+
+function actualizarEjercicio(id, nombre, descripcion) {
+  let ejercicios = StorageService.load("ejercicios", []);
+  ejercicios = ejercicios.map(e =>
+    e.id === id ? { ...e, nombre, descripcion } : e
+  );
+  StorageService.save("ejercicios", ejercicios);
+  renderEjercicios();
+}
+
+function eliminarEjercicio(id) {
+  let ejercicios = StorageService.load("ejercicios", []);
+  ejercicios = ejercicios.filter(e => e.id !== id);
+  StorageService.save("ejercicios", ejercicios);
+  renderEjercicios();
+}
+
+// --- Manejo de formulario ejercicios ---
+function cargarFormularioEjercicio(ejercicio) {
+  document.getElementById("nombre-ejercicio").value = ejercicio.nombre;
+  document.getElementById("descripcion-ejercicio").value = ejercicio.descripcion;
+  editandoEjercicioId = ejercicio.id;
+  document.querySelector("#form-ejercicio button").textContent = "Actualizar Ejercicio";
+}
+
+document.getElementById("form-ejercicio").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const nombre = document.getElementById("nombre-ejercicio").value.trim();
+  const descripcion = document.getElementById("descripcion-ejercicio").value.trim();
+
+  if (!nombre || !descripcion) return;
+
+  if (editandoEjercicioId) {
+    actualizarEjercicio(editandoEjercicioId, nombre, descripcion);
+    editandoEjercicioId = null;
+    document.querySelector("#form-ejercicio button").textContent = "Agregar Ejercicio";
+  } else {
+    guardarEjercicio(nombre, descripcion);
+  }
+
+  event.target.reset();
+});
+
 // --- Render inicial ---
 if (!StorageService.load("usuarios")) {
   const usuariosDemo = [
@@ -102,4 +186,13 @@ if (!StorageService.load("usuarios")) {
   StorageService.save("usuarios", usuariosDemo);
 }
 
+if (!StorageService.load("ejercicios")) {
+  const ejerciciosDemo = [
+    new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
+    new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
+  ];
+  StorageService.save("ejercicios", ejerciciosDemo);
+}
+
 renderUsuarios();
+renderEjercicios();

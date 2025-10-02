@@ -4,7 +4,94 @@ body {
   margin: 0;
   padding: 20px;
 }
+
 h1 {
   text-align: center;
   color: #333;
+  margin-bottom: 30px;
+}
+
+/* Contenedor principal de secciones */
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Cada sección (usuarios/ejercicios) */
+section {
+  flex: 1;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Formularios */
+form {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+form input, form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  flex: 1;
+}
+
+form button {
+  padding: 8px 12px;
+  border: none;
+  background: #05A3CB;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+form button:hover {
+  background: #0C3264;
+}
+
+/* Listas */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  background: #f1f1f1;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+li button {
+  margin-left: 6px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+li button:first-of-type {
+  background: #BB81B6;
+  color: #fff;
+}
+
+li button:last-of-type {
+  background: #d9534f;
+  color: #fff;
+}
+
+li button:hover {
+  opacity: 0.85;
 }
