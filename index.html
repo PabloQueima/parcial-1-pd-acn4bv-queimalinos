@@ -9,13 +9,13 @@
   <h1>Plataforma de Entrenamiento</h1>
 
   <div class="container">
-      <!-- Usuarios -->
+    <!-- Usuarios -->
     <section>
       <h2>Usuarios</h2>
       <input type="text" id="filtro-usuarios" placeholder="Buscar usuario...">
       <form id="form-usuario">
         <input type="text" id="nombre-usuario" placeholder="Nombre" required>
-            <select id="rol-usuario" required>
+        <select id="rol-usuario" required>
           <option value="" disabled selected>Seleccionar rol</option>
           <option value="admin">Admin</option>
           <option value="entrenador">Entrenador</option>
@@ -37,7 +37,29 @@
       </form>
       <ul id="lista-ejercicios"></ul>
     </section>
+  </div>
 
+  <!-- Sesiones -->
+  <section class="sesiones-section">
+    <h2>Sesiones de Entrenamiento</h2>
+
+    <input type="text" id="filtro-sesiones" placeholder="Buscar sesión...">
+
+    <form id="form-sesion">
+      <input type="text" id="titulo-sesion" placeholder="Título de la sesión" required>
+
+      <select id="cliente-sesion" required>
+        <option value="" disabled selected>Seleccionar cliente</option>
+      </select>
+
+      <select id="ejercicios-sesion" multiple required>
+      </select>
+
+      <button type="submit">Agregar Sesión</button>
+    </form>
+
+    <ul id="lista-sesiones"></ul>
+  </section>
 
   <script type="module" src="js/app.js"></script>
 </body>

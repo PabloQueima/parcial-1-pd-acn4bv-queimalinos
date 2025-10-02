@@ -12,6 +12,10 @@ let editandoEjercicioId = null;
 let filtroUsuarios = "";
 let filtroEjercicios = "";
 
+// --- Estado de sesiones ---
+let editandoSesionId = null;
+let filtroSesiones = "";
+
 // --- Filtrado dinámico ---
 document.getElementById("filtro-usuarios").addEventListener("keyup", (e) => {
   filtroUsuarios = e.target.value.toLowerCase();
@@ -21,6 +25,11 @@ document.getElementById("filtro-usuarios").addEventListener("keyup", (e) => {
 document.getElementById("filtro-ejercicios").addEventListener("keyup", (e) => {
   filtroEjercicios = e.target.value.toLowerCase();
   renderEjercicios();
+});
+
+document.getElementById("filtro-sesiones").addEventListener("keyup", (e) => {
+  filtroSesiones = e.target.value.toLowerCase();
+  renderSesiones();
 });
 
 // --- Render usuarios con filtro ---
@@ -185,6 +194,130 @@ document.getElementById("form-ejercicio").addEventListener("submit", (event) => 
     guardarEjercicio(nombre, descripcion);
   }
   event.target.reset();
+}
+);
+
+// --- Render clientes en select ---
+function renderClientesSelect() {
+  const select = document.getElementById("cliente-sesion");
+  if (!select) return; // seguridad
+  const clientes = StorageService.load("usuarios", []).filter(u => u.rol === "cliente");
+  select.innerHTML = '<option value="" disabled selected>Seleccionar cliente</option>';
+  clientes.forEach(c => {
+    const option = document.createElement("option");
+    option.value = c.id;
+    option.textContent = c.nombre;
+    select.appendChild(option);
+  });
+}
+
+// --- Render ejercicios en select múltiple ---
+function renderEjerciciosSelect() {
+  const select = document.getElementById("ejercicios-sesion");
+  if (!select) return; // seguridad
+  const ejercicios = StorageService.load("ejercicios", []);
+  select.innerHTML = "";
+  ejercicios.forEach(e => {
+    const option = document.createElement("option");
+    option.value = e.id;
+    option.textContent = e.nombre;
+    select.appendChild(option);
+  });
+}
+
+// --- Render sesiones ---
+function renderSesiones() {
+  let sesiones = StorageService.load("sesiones", []);
+  if (filtroSesiones) {
+    sesiones = sesiones.filter(s => s.titulo.toLowerCase().includes(filtroSesiones));
+  }
+
+  DOMUtils.renderList("lista-sesiones", sesiones, (s) => {
+    const li = document.createElement("li");
+
+    const cliente = StorageService.load("usuarios", []).find(u => u.id === s.clienteId);
+    const ejercicios = StorageService.load("ejercicios", []).filter(e => s.ejerciciosIds.includes(e.id));
+
+    li.textContent = `${s.titulo} - Cliente: ${cliente ? cliente.nombre : "Desconocido"} - Ejercicios: ${ejercicios.map(e => e.nombre).join(", ")}`;
+
+    const btnEdit = document.createElement("button");
+    btnEdit.textContent = "Editar";
+    btnEdit.style.marginLeft = "10px";
+    btnEdit.addEventListener("click", () => cargarFormularioSesion(s));
+
+    const btnDelete = document.createElement("button");
+    btnDelete.textContent = "Eliminar";
+    btnDelete.style.marginLeft = "5px";
+    btnDelete.addEventListener("click", () => {
+      if (confirm(`¿Eliminar la sesión "${s.titulo}"?`)) {
+        eliminarSesion(s.id);
+      }
+    });
+
+    li.appendChild(btnEdit);
+    li.appendChild(btnDelete);
+    return li;
+  });
+}
+
+// --- CRUD sesiones ---
+function guardarSesion(titulo, clienteId, ejerciciosIds) {
+  const sesiones = StorageService.load("sesiones", []);
+  const nuevaSesion = new Sesion(Date.now(), titulo, null, clienteId);
+  nuevaSesion.ejerciciosIds = ejerciciosIds;
+  sesiones.push(nuevaSesion);
+  StorageService.save("sesiones", sesiones);
+  renderSesiones();
+}
+
+function actualizarSesion(id, titulo, clienteId, ejerciciosIds) {
+  let sesiones = StorageService.load("sesiones", []);
+  sesiones = sesiones.map(s =>
+    s.id === id ? { ...s, titulo, clienteId, ejerciciosIds } : s
+  );
+  StorageService.save("sesiones", sesiones);
+  renderSesiones();
+}
+
+function eliminarSesion(id) {
+  let sesiones = StorageService.load("sesiones", []);
+  sesiones = sesiones.filter(s => s.id !== id);
+  StorageService.save("sesiones", sesiones);
+  renderSesiones();
+}
+
+// --- Manejo de formulario sesiones ---
+function cargarFormularioSesion(sesion) {
+  document.getElementById("titulo-sesion").value = sesion.titulo;
+  document.getElementById("cliente-sesion").value = sesion.clienteId;
+
+  const selectEjercicios = document.getElementById("ejercicios-sesion");
+  Array.from(selectEjercicios.options).forEach(opt => {
+    opt.selected = sesion.ejerciciosIds.includes(Number(opt.value));
+  });
+
+  editandoSesionId = sesion.id;
+  document.querySelector("#form-sesion button").textContent = "Actualizar Sesión";
+}
+
+document.getElementById("form-sesion").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const titulo = document.getElementById("titulo-sesion").value.trim();
+  const clienteId = Number(document.getElementById("cliente-sesion").value);
+  const ejerciciosSelect = document.getElementById("ejercicios-sesion");
+  const ejerciciosIds = Array.from(ejerciciosSelect.selectedOptions).map(o => Number(o.value));
+
+  if (!titulo || !clienteId || ejerciciosIds.length === 0) return;
+
+  if (editandoSesionId) {
+    actualizarSesion(editandoSesionId, titulo, clienteId, ejerciciosIds);
+    editandoSesionId = null;
+    document.querySelector("#form-sesion button").textContent = "Agregar Sesión";
+  } else {
+    guardarSesion(titulo, clienteId, ejerciciosIds);
+  }
+
+  event.target.reset();
 });
 
 // --- Inicialización demo ---
@@ -205,6 +338,13 @@ if (!StorageService.load("ejercicios")) {
   StorageService.save("ejercicios", ejerciciosDemo);
 }
 
+if (!StorageService.load("sesiones")) {
+  StorageService.save("sesiones", []);
+}
+
 // --- Render inicial ---
+renderClientesSelect();
+renderEjerciciosSelect();
 renderUsuarios();
 renderEjercicios();
+renderSesiones();
