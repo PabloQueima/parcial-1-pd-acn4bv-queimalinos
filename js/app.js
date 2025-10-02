@@ -13,20 +13,46 @@ const usuarios = [
   new Usuario(2, "Luis", "entrenador"),
   new Usuario(3, "Marta", "cliente")
 ];
-
-const ejercicios = [
-  new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
-  new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
-];
-
-// Guardamos en localStorage
 StorageService.save("usuarios", usuarios);
-StorageService.save("ejercicios", ejercicios);
 
-// Recuperamos
-const usuariosGuardados = StorageService.load("usuarios");
-const ejerciciosGuardados = StorageService.load("ejercicios");
+// Chequea si hay ejercicios
+if (!StorageService.load("ejercicios")) {
+  const ejercicios = [
+    new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
+    new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
+  ];
+  StorageService.save("ejercicios", ejercicios);
+}
 
-// Mostramos en el DOM
-DOMUtils.renderList("lista-usuarios", usuariosGuardados, u => `${u.nombre} (${u.rol})`);
-DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, e => `${e.nombre} - ${e.descripcion}`);
+// --- Funciones render ---
+function renderEjercicios() {
+  const ejerciciosGuardados = StorageService.load("ejercicios", []);
+  DOMUtils.renderList("lista-ejercicios", ejerciciosGuardados, e => `${e.nombre} - ${e.descripcion}`);
+}
+
+function renderUsuarios() {
+  const usuariosGuardados = StorageService.load("usuarios", []);
+  DOMUtils.renderList("lista-usuarios", usuariosGuardados, u => `${u.nombre} (${u.rol})`);
+}
+
+// --- Formulario ---
+document.getElementById("form-ejercicio").addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const nombre = document.getElementById("nombre-ejercicio").value.trim();
+  const descripcion = document.getElementById("descripcion-ejercicio").value.trim();
+
+  if (!nombre || !descripcion) return;
+
+  const ejercicios = StorageService.load("ejercicios", []);
+  const nuevoEjercicio = new Ejercicio(Date.now(), nombre, descripcion);
+
+  ejercicios.push(nuevoEjercicio);
+  StorageService.save("ejercicios", ejercicios);
+
+  renderEjercicios();
+  event.target.reset();
+});
+
+renderUsuarios();
+renderEjercicios();
