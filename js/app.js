@@ -370,7 +370,7 @@ document.getElementById("form-sesion").addEventListener("submit", (event) => {
 });
 
 /* -- INICIALIZACIÓN DE DATOS -- */
-if (!StorageService.load("usuarios")) {
+if ((StorageService.load("usuarios") || []).length === 0) {
   const usuariosDemo = [
     new Usuario(1, "Ana", "admin"),
     new Usuario(2, "Luis", "entrenador"),
@@ -379,7 +379,7 @@ if (!StorageService.load("usuarios")) {
   StorageService.save("usuarios", usuariosDemo);
 }
 
-if (!StorageService.load("ejercicios")) {
+if ((StorageService.load("ejercicios") || []).length === 0) {
   const ejerciciosDemo = [
     new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
     new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
@@ -387,7 +387,7 @@ if (!StorageService.load("ejercicios")) {
   StorageService.save("ejercicios", ejerciciosDemo);
 }
 
-if (!StorageService.load("sesiones")) {
+if ((StorageService.load("sesiones") || []).length === 0) {
   StorageService.save("sesiones", []);
 }
 
