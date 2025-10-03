@@ -3,14 +3,28 @@ import { StorageService } from "../services/storage.js";
 import { DOMUtils } from "../ui/dom.js";
 
 let editandoEjercicioId = null;
-let filtroEjercicios = "";
+let filtroNombre = "";
+let filtroBodyPart = "";
+let paginaActual = 1;
+const ejerciciosPorPagina = 10;
 
 export function initEjercicios() {
   const inputFiltro = document.getElementById("filtro-ejercicios");
+  const selectBodyPart = document.getElementById("filtro-bodypart");
+
   if (inputFiltro) {
     inputFiltro.addEventListener("keyup", (e) => {
-      filtroEjercicios = e.target.value.toLowerCase();
-      renderEjercicios();
+      filtroNombre = e.target.value.trim().toLowerCase();
+      paginaActual = 1;
+      cargarEjerciciosDesdeAPI();
+    });
+  }
+
+  if (selectBodyPart) {
+    selectBodyPart.addEventListener("change", (e) => {
+      filtroBodyPart = e.target.value;
+      paginaActual = 1;
+      cargarEjerciciosDesdeAPI();
     });
   }
 
@@ -33,15 +47,57 @@ export function initEjercicios() {
   cargarEjerciciosDesdeAPI();
 }
 
-function renderEjercicios() {
-  let ejercicios = StorageService.load("ejercicios", []);
-  if (filtroEjercicios) {
-    ejercicios = ejercicios.filter(e =>
-      (e.nombre || "").toLowerCase().includes(filtroEjercicios) ||
-      (e.descripcion || "").toLowerCase().includes(filtroEjercicios)
-    );
-  }
+async function cargarEjerciciosDesdeAPI() {
+  const loading = document.getElementById("loading-ejercicios");
+  loading.style.display = "block";
 
+  try {
+    let url = "";
+
+    // Determinar endpoint según los filtros activos
+    if (filtroNombre) {
+      url = `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(filtroNombre)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
+    } else if (filtroBodyPart) {
+      url = `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${encodeURIComponent(filtroBodyPart)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
+    } else {
+      url = `https://exercisedb.p.rapidapi.com/exercises?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        "X-RapidAPI-Key": "ed00eae7f7mshca4bc4bb46631f3p140c1djsn93547d7fa4ec",
+        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com"
+      }
+    });
+    if (!res.ok) throw new Error("Error al cargar ejercicios");
+
+    const data = await res.json();
+    const ejerciciosAdaptados = data.map(
+      (e, i) => new Ejercicio(i + 1, e.name, e.bodyPart ? `Trabaja: ${e.bodyPart}` : "Sin descripción")
+    );
+
+    StorageService.save("ejercicios", ejerciciosAdaptados);
+    renderEjercicios(ejerciciosAdaptados);
+
+  } catch (err) {
+    console.error("No se pudo cargar la API:", err);
+    const ejerciciosLocales = StorageService.load("ejercicios", []);
+    if (ejerciciosLocales.length) {
+      renderEjercicios(ejerciciosLocales);
+    } else {
+      const ejerciciosDemo = [
+        new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
+        new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
+      ];
+      StorageService.save("ejercicios", ejerciciosDemo);
+      renderEjercicios(ejerciciosDemo);
+    }
+  } finally {
+    loading.style.display = "none";
+  }
+}
+
+function renderEjercicios(ejercicios) {
   DOMUtils.renderList("lista-ejercicios", ejercicios, (e) => {
     const li = document.createElement("li");
     li.textContent = `${e.nombre} - ${e.descripcion}`;
@@ -60,27 +116,59 @@ function renderEjercicios() {
     li.appendChild(btnDelete);
     return li;
   });
+
+  renderPaginacion();
 }
 
+function renderPaginacion() {
+  const container = document.getElementById("paginacion-ejercicios");
+  container.innerHTML = "";
+
+  const btnPrev = document.createElement("button");
+  btnPrev.textContent = "Anterior";
+  btnPrev.disabled = paginaActual === 1;
+  btnPrev.addEventListener("click", () => {
+    if (paginaActual > 1) {
+      paginaActual--;
+      cargarEjerciciosDesdeAPI();
+    }
+  });
+
+  const btnNext = document.createElement("button");
+  btnNext.textContent = "Siguiente";
+  btnNext.addEventListener("click", () => {
+    paginaActual++;
+    cargarEjerciciosDesdeAPI();
+  });
+
+  const span = document.createElement("span");
+  span.textContent = ` Página ${paginaActual} `;
+
+  container.appendChild(btnPrev);
+  container.appendChild(span);
+  container.appendChild(btnNext);
+}
+
+// CRUD local
 function guardarEjercicio(nombre, descripcion) {
   const ejercicios = StorageService.load("ejercicios", []);
   ejercicios.push(new Ejercicio(Date.now(), nombre, descripcion));
   StorageService.save("ejercicios", ejercicios);
-  renderEjercicios();
+  renderEjercicios(ejercicios);
 }
 
 function actualizarEjercicio(id, nombre, descripcion) {
   let ejercicios = StorageService.load("ejercicios", []);
   ejercicios = ejercicios.map(e => e.id === id ? { ...e, nombre, descripcion } : e);
   StorageService.save("ejercicios", ejercicios);
-  renderEjercicios();
+  renderEjercicios(ejercicios);
 }
 
 function eliminarEjercicio(id) {
   let ejercicios = StorageService.load("ejercicios", []);
   ejercicios = ejercicios.filter(e => e.id !== id);
   StorageService.save("ejercicios", ejercicios);
-  renderEjercicios();
+  renderEjercicios(ejercicios);
 }
 
 function cargarFormularioEjercicio(ejercicio) {
@@ -88,35 +176,4 @@ function cargarFormularioEjercicio(ejercicio) {
   document.getElementById("descripcion-ejercicio").value = ejercicio.descripcion;
   editandoEjercicioId = ejercicio.id;
   document.querySelector("#form-ejercicio button").textContent = "Actualizar Ejercicio";
-}
-
-// --- API ---
-async function cargarEjerciciosDesdeAPI() {
-  try {
-    const res = await fetch("https://exercisedb.p.rapidapi.com/exercises?limit=10", {
-      headers: {
-        "X-RapidAPI-Key": "TU_API_KEY_AQUI",
-        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com"
-      }
-    });
-    if (!res.ok) throw new Error("Error al cargar ejercicios");
-
-    const data = await res.json();
-    const ejerciciosAdaptados = data.map((e, i) =>
-      new Ejercicio(i + 1, e.name, e.target ? `Trabaja: ${e.target}` : "Sin descripción")
-    );
-
-    StorageService.save("ejercicios", ejerciciosAdaptados);
-    renderEjercicios();
-  } catch (err) {
-    console.error("No se pudo cargar la API:", err);
-    if ((StorageService.load("ejercicios") || []).length === 0) {
-      const ejerciciosDemo = [
-        new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
-        new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
-      ];
-      StorageService.save("ejercicios", ejerciciosDemo);
-      renderEjercicios();
-    }
-  }
 }

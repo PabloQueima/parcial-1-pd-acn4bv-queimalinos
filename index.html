@@ -39,10 +39,25 @@
       <ul id="lista-usuarios"></ul>
     </section>
 
+
     <!-- Ejercicios -->
     <section>
       <h2>Ejercicios</h2>
-      <input type="text" id="filtro-ejercicios" placeholder="Buscar ejercicio...">
+      <div class="filtros-ejercicios">
+        <input type="text" id="filtro-ejercicios" placeholder="Buscar por nombre...">
+        
+        <select id="filtro-bodypart">
+          <option value="">Filtrar por grupo muscular</option>
+          <option value="back">Espalda</option>
+          <option value="chest">Pecho</option>
+          <option value="legs">Piernas</option>
+          <option value="arms">Brazos</option>
+          <option value="shoulders">Hombros</option>
+          <option value="waist">Cintura</option>
+        </select>
+      </div>
+
+
       <form id="form-ejercicio">
         <input type="text" id="nombre-ejercicio" placeholder="Nombre" required>
         <input type="text" id="descripcion-ejercicio" placeholder="Descripción" required>
@@ -50,8 +65,8 @@
       </form>
       <div id="loading-ejercicios" style="display:none;">Cargando ejercicios...</div>
       <ul id="lista-ejercicios"></ul>
+      <div id="paginacion-ejercicios" class="paginacion"></div>
     </section>
-  </div>
 
   <!-- Sesiones -->
   <section class="sesiones-section">
