@@ -1,60 +1,96 @@
+/* Tipografía y colores base */
 body {
-  font-family: Arial, sans-serif;
-  background: #f7f7f7;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f7fb;
   margin: 0;
+  padding: 0;
+  color: #15114D;
+}
+
+/* Header con logo */
+header {
+  background: linear-gradient(135deg, #05A3CB, #0C3264);
+  color: #fff;
   padding: 20px;
-}
-
-h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 30px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* Contenedor principal de secciones */
+header img {
+  max-height: 60px;
+  position: absolute;
+  top: 15px;
+  left: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+/* Contenedor principal */
 .container {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 20px;
+  padding: 30px;
 }
 
-/* Cada sección (usuarios/ejercicios) */
+/* Secciones */
 section {
   flex: 1;
   background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+section:hover {
+  transform: translateY(-2px);
 }
 
 /* Formularios */
 form {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-form input, form select {
-  padding: 8px;
+form input,
+form select {
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 8px;
   flex: 1;
+  font-size: 0.95rem;
+  transition: border 0.2s ease;
+}
+
+form input:focus,
+form select:focus {
+  outline: none;
+  border: 1px solid #05A3CB;
 }
 
 form button {
-  padding: 8px 12px;
+  padding: 10px 16px;
   border: none;
   background: #05A3CB;
   color: #fff;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
 }
 
 form button:hover {
   background: #0C3264;
+  transform: translateY(-2px);
 }
 
 /* Listas */
@@ -65,21 +101,29 @@ ul {
 }
 
 li {
-  background: #f1f1f1;
-  margin-bottom: 8px;
-  padding: 8px;
-  border-radius: 6px;
+  background: #f9fafc;
+  margin-bottom: 10px;
+  padding: 12px 15px;
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+li:hover {
+  transform: translateX(3px);
 }
 
 li button {
-  margin-left: 6px;
-  padding: 4px 6px;
+  margin-left: 8px;
+  padding: 6px 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.85rem;
+  transition: opacity 0.2s ease, transform 0.1s ease;
 }
 
 li button:first-of-type {
@@ -93,54 +137,62 @@ li button:last-of-type {
 }
 
 li button:hover {
-  opacity: 0.85;
+  opacity: 0.9;
+  transform: scale(1.05);
 }
 
 /* Tarjetas de sesiones */
-#lista-sesiones {
-  list-style: none;
-  padding: 0;
+#lista-sesiones .card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
 }
 
-#lista-sesiones .card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 15px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+#lista-sesiones .card:hover {
+  transform: translateY(-3px);
 }
 
 #lista-sesiones .card h3 {
   margin-top: 0;
-  color: #333;
+  color: #0C3264;
 }
 
 #lista-sesiones .ejercicios-lista {
-  margin: 10px 0;
+  margin: 12px 0;
   padding-left: 20px;
 }
 
 #lista-sesiones .acciones {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 #lista-sesiones button {
   margin-right: 10px;
 }
 
+/* Checkboxes */
 .ejercicios-checkboxes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0;
+  gap: 12px;
+  margin: 12px 0;
 }
 
 .ejercicios-checkboxes .checkbox-item {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background: #f4f4f4;
-  padding: 5px 10px;
-  border-radius: 5px;
+  gap: 6px;
+  background: #eef5fb;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d0e3f0;
+  transition: background 0.2s ease;
+}
+
+.ejercicios-checkboxes .checkbox-item:hover {
+  background: #d6ecfa;
 }
