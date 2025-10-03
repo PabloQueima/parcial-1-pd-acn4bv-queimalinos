@@ -44,7 +44,6 @@
     <h2>Sesiones de Entrenamiento</h2>
 
     <input type="text" id="filtro-sesiones" placeholder="Buscar sesión...">
-
     <form id="form-sesion">
       <input type="text" id="titulo-sesion" placeholder="Título de la sesión" required>
 
@@ -52,8 +51,8 @@
         <option value="" disabled selected>Seleccionar cliente</option>
       </select>
 
-      <select id="ejercicios-sesion" multiple required>
-      </select>
+      <!-- Lista de ejercicios -->
+      <div id="ejercicios-sesion" class="ejercicios-checkboxes"></div>
 
       <button type="submit">Agregar Sesión</button>
     </form>
