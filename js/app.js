@@ -370,6 +370,43 @@ document.getElementById("form-sesion").addEventListener("submit", (event) => {
 });
 
 /* -- INICIALIZACIÓN DE DATOS -- */
+async function cargarEjerciciosDesdeAPI() {
+  const loader = document.getElementById("loading-ejercicios");
+  if (loader) loader.style.display = "block";
+  try {
+    const res = await fetch("https://exercisedb.p.rapidapi.com/exercises", {
+      headers: {
+        "X-RapidAPI-Key": "ed00eae7f7mshca4bc4bb46631f3p140c1djsn93547d7fa4ec",
+        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com"
+      }
+    });
+    if (!res.ok) throw new Error("Error al cargar ejercicios");
+
+    const data = await res.json();
+    const ejerciciosAdaptados = data.map((e, i) =>
+      new Ejercicio(i + 1, e.name, e.target ? `Trabaja: ${e.target}` : "Sin descripción")
+    );
+
+    StorageService.save("ejercicios", ejerciciosAdaptados);
+    renderEjercicios();
+    renderEjerciciosCheckboxes();
+  } catch (err) {
+    console.error("No se pudo cargar la API:", err);
+    if ((StorageService.load("ejercicios") || []).length === 0) {
+      const ejerciciosDemo = [
+        new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
+        new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
+      ];
+      StorageService.save("ejercicios", ejerciciosDemo);
+      renderEjercicios();
+      renderEjerciciosCheckboxes();
+    }
+  } finally {
+    if (loader) loader.style.display = "none";
+  }
+}
+
+// Usuarios demo
 if ((StorageService.load("usuarios") || []).length === 0) {
   const usuariosDemo = [
     new Usuario(1, "Ana", "admin"),
@@ -379,21 +416,13 @@ if ((StorageService.load("usuarios") || []).length === 0) {
   StorageService.save("usuarios", usuariosDemo);
 }
 
-if ((StorageService.load("ejercicios") || []).length === 0) {
-  const ejerciciosDemo = [
-    new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
-    new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
-  ];
-  StorageService.save("ejercicios", ejerciciosDemo);
-}
-
+// Sesiones demo
 if ((StorageService.load("sesiones") || []).length === 0) {
   StorageService.save("sesiones", []);
 }
 
-/* -- RENDER INICIAL -- */
-renderUsuarios();
-renderEjercicios();
+// 🚀 Inicialización
+cargarEjerciciosDesdeAPI();
 renderClientesSelect();
-renderEjerciciosCheckboxes();
+renderUsuarios();
 renderSesiones();
