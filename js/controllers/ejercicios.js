@@ -137,6 +137,11 @@ function renderEjercicios(ejercicios) {
   });
 
   renderPaginacion();
+
+  const event = new CustomEvent("ejerciciosActualizados", {
+    detail: { ejercicios }
+  });
+  window.dispatchEvent(event);
 }
 
 function renderPaginacion() {

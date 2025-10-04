@@ -13,6 +13,11 @@ export function initSesiones() {
       filtroSesiones = e.target.value.toLowerCase();
       renderSesiones();
     });
+
+    window.addEventListener("ejerciciosActualizados", (e) => {
+    StorageService.save("ejercicios", e.detail.ejercicios);
+    renderEjerciciosCheckboxes();
+  });
   }
 
   // --- Formulario ---
