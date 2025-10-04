@@ -13,11 +13,6 @@ export function initSesiones() {
       filtroSesiones = e.target.value.toLowerCase();
       renderSesiones();
     });
-
-    window.addEventListener("ejerciciosActualizados", (e) => {
-    StorageService.save("ejercicios", e.detail.ejercicios);
-    renderEjerciciosCheckboxes();
-  });
   }
 
   // --- Formulario ---
@@ -28,31 +23,26 @@ export function initSesiones() {
       const titulo = document.getElementById("titulo-sesion").value.trim();
       const clienteId = Number(document.getElementById("cliente-sesion").value);
 
-      const ejerciciosIds = Array.from(document.querySelectorAll("#ejercicios-sesion input:checked"))
-        .map(cb => Number(cb.value));
-
-      if (!titulo || !clienteId || ejerciciosIds.length === 0) return;
+      if (!titulo || !clienteId) return;
 
       if (editandoSesionId) {
-        actualizarSesion(editandoSesionId, titulo, clienteId, ejerciciosIds);
+        actualizarSesion(editandoSesionId, titulo, clienteId);
         editandoSesionId = null;
         document.querySelector("#form-sesion button").textContent = "Agregar Sesión";
       } else {
-        guardarSesion(titulo, clienteId, ejerciciosIds);
+        guardarSesion(titulo, clienteId);
       }
 
       event.target.reset();
-      document.querySelectorAll("#ejercicios-sesion input[type='checkbox']").forEach(cb => cb.checked = false);
     });
   }
 
-  // --- Sesiones demo ---
+  // --- Inicialización ---
   if ((StorageService.load("sesiones") || []).length === 0) {
     StorageService.save("sesiones", []);
   }
 
   renderClientesSelect();
-  renderEjerciciosCheckboxes();
   renderSesiones();
 }
 
@@ -72,27 +62,6 @@ function renderClientesSelect() {
   });
 }
 
-function renderEjerciciosCheckboxes() {
-  const contenedor = document.getElementById("ejercicios-sesion");
-  if (!contenedor) return;
-
-  const ejercicios = StorageService.load("ejercicios", []);
-  contenedor.innerHTML = "";
-
-  ejercicios.forEach(e => {
-    const label = document.createElement("label");
-    label.className = "checkbox-item";
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = e.id;
-
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(" " + e.nombre));
-    contenedor.appendChild(label);
-  });
-}
-
 function renderSesiones() {
   let sesiones = StorageService.load("sesiones", []);
   if (filtroSesiones) {
@@ -100,27 +69,18 @@ function renderSesiones() {
   }
 
   const usuarios = StorageService.load("usuarios", []);
-  const ejercicios = StorageService.load("ejercicios", []);
 
   DOMUtils.renderList("lista-sesiones", sesiones, (s) => {
     const li = document.createElement("li");
     li.className = "card";
 
     const cliente = usuarios.find(u => u.id === s.clienteId);
-    const ejerciciosAsignados = ejercicios.filter(e => s.ejerciciosIds.includes(e.id));
 
     const titulo = document.createElement("h3");
     titulo.textContent = s.titulo;
 
     const clienteP = document.createElement("p");
     clienteP.textContent = `Cliente: ${cliente ? cliente.nombre : "Desconocido"}`;
-
-    const listaEj = document.createElement("ul");
-    ejerciciosAsignados.forEach(e => {
-      const liEj = document.createElement("li");
-      liEj.textContent = e.nombre;
-      listaEj.appendChild(liEj);
-    });
 
     const acciones = document.createElement("div");
     acciones.className = "acciones";
@@ -140,7 +100,6 @@ function renderSesiones() {
 
     li.appendChild(titulo);
     li.appendChild(clienteP);
-    li.appendChild(listaEj);
     li.appendChild(acciones);
 
     return li;
@@ -148,19 +107,18 @@ function renderSesiones() {
 }
 
 /* --- CRUD --- */
-function guardarSesion(titulo, clienteId, ejerciciosIds) {
+function guardarSesion(titulo, clienteId) {
   const sesiones = StorageService.load("sesiones", []);
   const nuevaSesion = new Sesion(Date.now(), titulo, null, clienteId);
-  nuevaSesion.ejerciciosIds = ejerciciosIds;
   sesiones.push(nuevaSesion);
   StorageService.save("sesiones", sesiones);
   renderSesiones();
 }
 
-function actualizarSesion(id, titulo, clienteId, ejerciciosIds) {
+function actualizarSesion(id, titulo, clienteId) {
   let sesiones = StorageService.load("sesiones", []);
   sesiones = sesiones.map(s =>
-    s.id === id ? { ...s, titulo, clienteId, ejerciciosIds } : s
+    s.id === id ? { ...s, titulo, clienteId } : s
   );
   StorageService.save("sesiones", sesiones);
   renderSesiones();
@@ -175,19 +133,8 @@ function eliminarSesion(id) {
 
 /* --- FORMULARIO --- */
 function cargarFormularioSesion(sesion) {
-  const contenedor = document.getElementById("ejercicios-sesion");
-  if (contenedor && contenedor.children.length === 0) {
-    renderEjerciciosCheckboxes();
-  }
-
   document.getElementById("titulo-sesion").value = sesion.titulo;
   document.getElementById("cliente-sesion").value = sesion.clienteId;
-
-  const checkboxes = document.querySelectorAll("#ejercicios-sesion input[type='checkbox']");
-  checkboxes.forEach(cb => {
-    cb.checked = sesion.ejerciciosIds.includes(Number(cb.value));
-  });
-
   editandoSesionId = sesion.id;
   document.querySelector("#form-sesion button").textContent = "Actualizar Sesión";
 }
