@@ -57,8 +57,9 @@ app.js → punto de entrada que inicializa todos los controladores.
 
 ---
 ## Próximos pasos
+- Agregar ejercicios determinados a una sesion
 - Separar tableros según perfil del usuario (admin, entrenador, cliente)
-- Incorporar detalles e imágenes de los ejercicios
+- Incorporar descripción, series, repeticiones e imágenes de los ejercicios
 - Autenticación básica de usuarios.
 
 ---
