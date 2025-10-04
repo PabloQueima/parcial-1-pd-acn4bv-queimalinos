@@ -5,12 +5,14 @@ import { DOMUtils } from "../ui/dom.js";
 let editandoEjercicioId = null;
 let filtroNombre = "";
 let filtroBodyPart = "";
+let filtroEquipment = "";
 let paginaActual = 1;
 const ejerciciosPorPagina = 10;
 
 export function initEjercicios() {
   const inputFiltro = document.getElementById("filtro-ejercicios");
   const selectBodyPart = document.getElementById("filtro-bodypart");
+  const selectEquipment = document.getElementById("filtro-equipment");
 
   if (inputFiltro) {
     inputFiltro.addEventListener("keyup", (e) => {
@@ -23,6 +25,14 @@ export function initEjercicios() {
   if (selectBodyPart) {
     selectBodyPart.addEventListener("change", (e) => {
       filtroBodyPart = e.target.value;
+      paginaActual = 1;
+      cargarEjerciciosDesdeAPI();
+    });
+  }
+
+  if (selectEquipment) {
+    selectEquipment.addEventListener("change", (e) => {
+      filtroEquipment = e.target.value;
       paginaActual = 1;
       cargarEjerciciosDesdeAPI();
     });
@@ -59,6 +69,8 @@ async function cargarEjerciciosDesdeAPI() {
       url = `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(filtroNombre)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
     } else if (filtroBodyPart) {
       url = `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${encodeURIComponent(filtroBodyPart)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
+    } else if (filtroEquipment) {
+      url = `https://exercisedb.p.rapidapi.com/exercises/equipment/${encodeURIComponent(filtroEquipment)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
     } else {
       url = `https://exercisedb.p.rapidapi.com/exercises?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
     }
@@ -69,11 +81,18 @@ async function cargarEjerciciosDesdeAPI() {
         "X-RapidAPI-Host": "exercisedb.p.rapidapi.com"
       }
     });
+
     if (!res.ok) throw new Error("Error al cargar ejercicios");
 
     const data = await res.json();
+
     const ejerciciosAdaptados = data.map(
-      (e, i) => new Ejercicio(i + 1, e.name, e.bodyPart ? `Trabaja: ${e.bodyPart}` : "Sin descripción")
+      (e, i) =>
+        new Ejercicio(
+          i + 1 + (paginaActual - 1) * ejerciciosPorPagina,
+          e.name,
+          e.bodyPart ? `Trabaja: ${e.bodyPart} (${e.equipment || "sin equipo"})` : "Sin descripción"
+        )
     );
 
     StorageService.save("ejercicios", ejerciciosAdaptados);

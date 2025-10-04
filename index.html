@@ -45,18 +45,23 @@
       <h2>Ejercicios</h2>
       <div class="filtros-ejercicios">
         <input type="text" id="filtro-ejercicios" placeholder="Buscar por nombre...">
-        
-        <select id="filtro-bodypart">
-          <option value="">Filtrar por grupo muscular</option>
-          <option value="back">Espalda</option>
-          <option value="chest">Pecho</option>
-          <option value="legs">Piernas</option>
-          <option value="arms">Brazos</option>
-          <option value="shoulders">Hombros</option>
-          <option value="waist">Cintura</option>
-        </select>
-      </div>
+          <select id="filtro-bodypart">
+            <option value="">Todas las partes</option>
+            <option value="back">Espalda</option>
+            <option value="chest">Pecho</option>
+            <option value="legs">Piernas</option>
+            <option value="shoulders">Hombros</option>
+            <option value="arms">Brazos</option>
+          </select>
 
+          <select id="filtro-equipment">
+            <option value="">Todo el equipo</option>
+            <option value="barbell">Barra</option>
+            <option value="dumbbell">Mancuerna</option>
+            <option value="body weight">Peso corporal</option>
+            <option value="kettlebell">Kettlebell</option>
+            <option value="cable">Polea</option>
+          </select>
 
       <form id="form-ejercicio">
         <input type="text" id="nombre-ejercicio" placeholder="Nombre" required>
