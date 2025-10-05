@@ -9,7 +9,7 @@ let filtroEquipment = "";
 let paginaActual = 1;
 const ejerciciosPorPagina = 10;
 
-// URL del JSON alojado en jsonblob.com (HTTPS y ruta API)
+// URL del JSON remoto
 const JSON_URL = "https://jsonblob.com/api/jsonBlob/1424456914355544064";
 
 // --- Inicialización ---
@@ -29,7 +29,7 @@ export function initEjercicios() {
 
   if (selectBodyPart) {
     selectBodyPart.addEventListener("change", (e) => {
-      filtroBodyPart = e.target.value;
+      filtroBodyPart = e.target.value.trim().toLowerCase();
       paginaActual = 1;
       renderEjerciciosFiltrados();
     });
@@ -37,7 +37,7 @@ export function initEjercicios() {
 
   if (selectEquipment) {
     selectEquipment.addEventListener("change", (e) => {
-      filtroEquipment = e.target.value;
+      filtroEquipment = e.target.value.trim().toLowerCase();
       paginaActual = 1;
       renderEjerciciosFiltrados();
     });
@@ -52,19 +52,22 @@ export function initEjercicios() {
     });
   }
 
+  // --- Formulario Ejercicio ---
   document.getElementById("form-ejercicio").addEventListener("submit", (event) => {
     event.preventDefault();
     const nombre = document.getElementById("nombre-ejercicio").value.trim();
-    const parteCuerpo = document.getElementById("descripcion-ejercicio").value.trim(); // ahora usamos descripción como parteCuerpo temporal si quieres
-    const elemento = ""; // puede pedirse desde otro input si lo deseas
-    if (!nombre || !parteCuerpo) return;
+    const descripcion = document.getElementById("descripcion-ejercicio").value.trim();
+    const parteCuerpo = document.getElementById("partecuerpo-ejercicio").value.trim();
+    const elemento = document.getElementById("elemento-ejercicio").value.trim();
+
+    if (!nombre || !descripcion) return;
 
     if (editandoEjercicioId) {
-      actualizarEjercicio(editandoEjercicioId, nombre, parteCuerpo, elemento);
+      actualizarEjercicio(editandoEjercicioId, nombre, descripcion, parteCuerpo, elemento);
       editandoEjercicioId = null;
       document.querySelector("#form-ejercicio button").textContent = "Agregar Ejercicio";
     } else {
-      guardarEjercicio(nombre, parteCuerpo, elemento);
+      guardarEjercicio(nombre, descripcion, parteCuerpo, elemento);
     }
     event.target.reset();
   });
@@ -96,9 +99,9 @@ async function cargarEjerciciosDesdeJSON() {
     const adaptados = data.map((e, i) => new Ejercicio(
       i + 1,
       e.nombre,
-      `Trabaja: ${e.parteCuerpo} (${e.elemento || "sin equipo"})`,
-      e.parteCuerpo.toLowerCase(),
-      e.elemento.toLowerCase()
+      e.descripcion || `Ejercicio para ${e.parteCuerpo}`,
+      e.parteCuerpo ? e.parteCuerpo.toLowerCase() : "",
+      e.elemento ? e.elemento.toLowerCase() : ""
     ));
 
     StorageService.save("ejerciciosBase", adaptados);
@@ -121,10 +124,10 @@ function renderEjerciciosFiltrados() {
     filtrados = filtrados.filter(e => e.nombre.toLowerCase().includes(filtroNombre));
 
   if (filtroBodyPart)
-    filtrados = filtrados.filter(e => e.parteCuerpo && e.parteCuerpo.toLowerCase() === filtroBodyPart.toLowerCase());
+    filtrados = filtrados.filter(e => e.parteCuerpo && e.parteCuerpo.toLowerCase() === filtroBodyPart);
 
   if (filtroEquipment)
-    filtrados = filtrados.filter(e => e.elemento && e.elemento.toLowerCase() === filtroEquipment.toLowerCase());
+    filtrados = filtrados.filter(e => e.elemento && e.elemento.toLowerCase() === filtroEquipment);
 
   const inicio = (paginaActual - 1) * ejerciciosPorPagina;
   const paginados = filtrados.slice(inicio, inicio + ejerciciosPorPagina);
@@ -217,6 +220,8 @@ function eliminarEjercicio(id) {
 function cargarFormularioEjercicio(ejercicio) {
   document.getElementById("nombre-ejercicio").value = ejercicio.nombre;
   document.getElementById("descripcion-ejercicio").value = ejercicio.descripcion;
+  document.getElementById("partecuerpo-ejercicio").value = ejercicio.parteCuerpo;
+  document.getElementById("elemento-ejercicio").value = ejercicio.elemento;
   editandoEjercicioId = ejercicio.id;
   document.querySelector("#form-ejercicio button").textContent = "Actualizar Ejercicio";
 }

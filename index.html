@@ -50,20 +50,20 @@
         <input type="text" id="filtro-ejercicios" placeholder="Buscar por nombre...">
         <select id="filtro-bodypart">
           <option value="">Todas las partes</option>
-          <option value="back">Espalda</option>
-          <option value="chest">Pecho</option>
-          <option value="legs">Piernas</option>
-          <option value="shoulders">Hombros</option>
-          <option value="arms">Brazos</option>
+          <option value="espalda">Espalda</option>
+          <option value="pecho">Pecho</option>
+          <option value="piernas">Piernas</option>
+          <option value="hombros">Hombros</option>
+          <option value="brazos">Brazos</option>
         </select>
 
         <select id="filtro-equipment">
           <option value="">Todo el equipo</option>
-          <option value="barbell">Barra</option>
-          <option value="dumbbell">Mancuerna</option>
-          <option value="body weight">Peso corporal</option>
+          <option value="barra">Barra</option>
+          <option value="mancuerna">Mancuerna</option>
+          <option value="peso corporal">Peso corporal</option>
           <option value="kettlebell">Kettlebell</option>
-          <option value="cable">Polea</option>
+          <option value="polea">Polea</option>
         </select>
       </div>
 
@@ -72,6 +72,22 @@
         <input type="text" id="nombre-ejercicio" placeholder="Nombre" required>
         <label>Descripción</label>
         <input type="text" id="descripcion-ejercicio" placeholder="Descripción" required>
+        <label>Parte del cuerpo</label>
+        <select id="partecuerpo-ejercicio" required>
+          <option value="espalda">Espalda</option>
+          <option value="pecho">Pecho</option>
+          <option value="piernas">Piernas</option>
+          <option value="hombros">Hombros</option>
+          <option value="brazos">Brazos</option>
+        </select>
+        <label>Equipo</label>
+        <select id="elemento-ejercicio" required>
+          <option value="barra">Barra</option>
+          <option value="mancuerna">Mancuerna</option>
+          <option value="peso corporal">Peso corporal</option>
+          <option value="kettlebell">Kettlebell</option>
+          <option value="polea">Polea</option>
+        </select>
         <button type="submit">Agregar Ejercicio</button>
       </form>
 
