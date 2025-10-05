@@ -9,16 +9,21 @@ let filtroEquipment = "";
 let paginaActual = 1;
 const ejerciciosPorPagina = 10;
 
+// URL del JSON alojado en jsonblob.com (HTTPS y ruta API)
+const JSON_URL = "https://jsonblob.com/api/jsonBlob/1424456914355544064";
+
+// --- Inicialización ---
 export function initEjercicios() {
   const inputFiltro = document.getElementById("filtro-ejercicios");
   const selectBodyPart = document.getElementById("filtro-bodypart");
   const selectEquipment = document.getElementById("filtro-equipment");
+  const btnActualizar = document.getElementById("btn-actualizar-api");
 
   if (inputFiltro) {
     inputFiltro.addEventListener("keyup", (e) => {
       filtroNombre = e.target.value.trim().toLowerCase();
       paginaActual = 1;
-      cargarEjerciciosDesdeAPI();
+      renderEjerciciosFiltrados();
     });
   }
 
@@ -26,7 +31,7 @@ export function initEjercicios() {
     selectBodyPart.addEventListener("change", (e) => {
       filtroBodyPart = e.target.value;
       paginaActual = 1;
-      cargarEjerciciosDesdeAPI();
+      renderEjerciciosFiltrados();
     });
   }
 
@@ -34,89 +39,101 @@ export function initEjercicios() {
     selectEquipment.addEventListener("change", (e) => {
       filtroEquipment = e.target.value;
       paginaActual = 1;
-      cargarEjerciciosDesdeAPI();
+      renderEjerciciosFiltrados();
+    });
+  }
+
+  if (btnActualizar) {
+    btnActualizar.addEventListener("click", async () => {
+      if (confirm("¿Deseas actualizar el catálogo de ejercicios desde el JSON remoto?")) {
+        await cargarEjerciciosDesdeJSON();
+        renderEjerciciosFiltrados();
+      }
     });
   }
 
   document.getElementById("form-ejercicio").addEventListener("submit", (event) => {
     event.preventDefault();
     const nombre = document.getElementById("nombre-ejercicio").value.trim();
-    const descripcion = document.getElementById("descripcion-ejercicio").value.trim();
-    if (!nombre || !descripcion) return;
+    const parteCuerpo = document.getElementById("descripcion-ejercicio").value.trim(); // ahora usamos descripción como parteCuerpo temporal si quieres
+    const elemento = ""; // puede pedirse desde otro input si lo deseas
+    if (!nombre || !parteCuerpo) return;
 
     if (editandoEjercicioId) {
-      actualizarEjercicio(editandoEjercicioId, nombre, descripcion);
+      actualizarEjercicio(editandoEjercicioId, nombre, parteCuerpo, elemento);
       editandoEjercicioId = null;
       document.querySelector("#form-ejercicio button").textContent = "Agregar Ejercicio";
     } else {
-      guardarEjercicio(nombre, descripcion);
+      guardarEjercicio(nombre, parteCuerpo, elemento);
     }
     event.target.reset();
   });
 
-  cargarEjerciciosDesdeAPI();
+  inicializarCatalogo();
 }
 
-async function cargarEjerciciosDesdeAPI() {
+// --- Carga inicial ---
+async function inicializarCatalogo() {
+  const ejerciciosLocales = StorageService.load("ejerciciosBase", []);
+  if (ejerciciosLocales.length === 0) {
+    await cargarEjerciciosDesdeJSON();
+  }
+  renderEjerciciosFiltrados();
+}
+
+// --- Carga desde JSON remoto ---
+async function cargarEjerciciosDesdeJSON() {
   const loading = document.getElementById("loading-ejercicios");
-  loading.style.display = "block";
+  if (loading) loading.style.display = "block";
 
   try {
-    let url = "";
-
-    // Determinar endpoint según los filtros activos
-    if (filtroNombre) {
-      url = `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(filtroNombre)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
-    } else if (filtroBodyPart) {
-      url = `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${encodeURIComponent(filtroBodyPart)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
-    } else if (filtroEquipment) {
-      url = `https://exercisedb.p.rapidapi.com/exercises/equipment/${encodeURIComponent(filtroEquipment)}?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
-    } else {
-      url = `https://exercisedb.p.rapidapi.com/exercises?limit=${ejerciciosPorPagina}&offset=${(paginaActual - 1) * ejerciciosPorPagina}`;
-    }
-
-    const res = await fetch(url, {
-      headers: {
-        "X-RapidAPI-Key": "ed00eae7f7mshca4bc4bb46631f3p140c1djsn93547d7fa4ec",
-        "X-RapidAPI-Host": "exercisedb.p.rapidapi.com"
-      }
-    });
-
-    if (!res.ok) throw new Error("Error al cargar ejercicios");
+    const res = await fetch(JSON_URL, { method: "GET" });
+    if (!res.ok) throw new Error(`Error al cargar JSON remoto (${res.status})`);
 
     const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("El JSON remoto no tiene formato de lista");
 
-    const ejerciciosAdaptados = data.map(
-      (e, i) =>
-        new Ejercicio(
-          i + 1 + (paginaActual - 1) * ejerciciosPorPagina,
-          e.name,
-          e.bodyPart ? `Trabaja: ${e.bodyPart} (${e.equipment || "sin equipo"})` : "Sin descripción"
-        )
-    );
+    const adaptados = data.map((e, i) => new Ejercicio(
+      i + 1,
+      e.nombre,
+      `Trabaja: ${e.parteCuerpo} (${e.elemento || "sin equipo"})`,
+      e.parteCuerpo.toLowerCase(),
+      e.elemento.toLowerCase()
+    ));
 
-    StorageService.save("ejercicios", ejerciciosAdaptados);
-    renderEjercicios(ejerciciosAdaptados);
-
+    StorageService.save("ejerciciosBase", adaptados);
+    StorageService.save("ejercicios", adaptados);
+    console.log(`✅ Ejercicios cargados desde JSON: ${adaptados.length}`);
   } catch (err) {
-    console.error("No se pudo cargar la API:", err);
-    const ejerciciosLocales = StorageService.load("ejercicios", []);
-    if (ejerciciosLocales.length) {
-      renderEjercicios(ejerciciosLocales);
-    } else {
-      const ejerciciosDemo = [
-        new Ejercicio(1, "Sentadillas", "Ejercicio de piernas"),
-        new Ejercicio(2, "Flexiones", "Ejercicio de pecho")
-      ];
-      StorageService.save("ejercicios", ejerciciosDemo);
-      renderEjercicios(ejerciciosDemo);
-    }
+    console.error("❌ Error al sincronizar JSON remoto:", err);
+    alert("No se pudieron cargar los ejercicios desde el JSON remoto.");
   } finally {
-    loading.style.display = "none";
+    if (loading) loading.style.display = "none";
   }
 }
 
-function renderEjercicios(ejercicios) {
+// --- Filtros locales ---
+function renderEjerciciosFiltrados() {
+  const ejercicios = StorageService.load("ejerciciosBase", []);
+  let filtrados = ejercicios;
+
+  if (filtroNombre)
+    filtrados = filtrados.filter(e => e.nombre.toLowerCase().includes(filtroNombre));
+
+  if (filtroBodyPart)
+    filtrados = filtrados.filter(e => e.parteCuerpo && e.parteCuerpo.toLowerCase() === filtroBodyPart.toLowerCase());
+
+  if (filtroEquipment)
+    filtrados = filtrados.filter(e => e.elemento && e.elemento.toLowerCase() === filtroEquipment.toLowerCase());
+
+  const inicio = (paginaActual - 1) * ejerciciosPorPagina;
+  const paginados = filtrados.slice(inicio, inicio + ejerciciosPorPagina);
+
+  renderEjercicios(paginados, filtrados.length);
+}
+
+// --- Render ---
+function renderEjercicios(ejercicios, totalFiltrados) {
   DOMUtils.renderList("lista-ejercicios", ejercicios, (e) => {
     const li = document.createElement("li");
     li.textContent = `${e.nombre} - ${e.descripcion}`;
@@ -136,63 +153,65 @@ function renderEjercicios(ejercicios) {
     return li;
   });
 
-  renderPaginacion();
+  renderPaginacion(totalFiltrados);
 
-  const event = new CustomEvent("ejerciciosActualizados", {
-    detail: { ejercicios }
-  });
+  const event = new CustomEvent("ejerciciosActualizados", { detail: { ejercicios } });
   window.dispatchEvent(event);
 }
 
-function renderPaginacion() {
+function renderPaginacion(total) {
   const container = document.getElementById("paginacion-ejercicios");
   container.innerHTML = "";
 
+  const totalPaginas = Math.ceil(total / ejerciciosPorPagina);
   const btnPrev = document.createElement("button");
   btnPrev.textContent = "Anterior";
   btnPrev.disabled = paginaActual === 1;
   btnPrev.addEventListener("click", () => {
     if (paginaActual > 1) {
       paginaActual--;
-      cargarEjerciciosDesdeAPI();
+      renderEjerciciosFiltrados();
     }
   });
 
   const btnNext = document.createElement("button");
   btnNext.textContent = "Siguiente";
+  btnNext.disabled = paginaActual >= totalPaginas;
   btnNext.addEventListener("click", () => {
-    paginaActual++;
-    cargarEjerciciosDesdeAPI();
+    if (paginaActual < totalPaginas) {
+      paginaActual++;
+      renderEjerciciosFiltrados();
+    }
   });
 
   const span = document.createElement("span");
-  span.textContent = ` Página ${paginaActual} `;
+  span.textContent = ` Página ${paginaActual} de ${totalPaginas} `;
 
   container.appendChild(btnPrev);
   container.appendChild(span);
   container.appendChild(btnNext);
 }
 
-// CRUD local
-function guardarEjercicio(nombre, descripcion) {
-  const ejercicios = StorageService.load("ejercicios", []);
-  ejercicios.push(new Ejercicio(Date.now(), nombre, descripcion));
-  StorageService.save("ejercicios", ejercicios);
-  renderEjercicios(ejercicios);
+// --- CRUD local sobre la base ---
+function guardarEjercicio(nombre, descripcion, parteCuerpo, elemento) {
+  const ejercicios = StorageService.load("ejerciciosBase", []);
+  ejercicios.push(new Ejercicio(Date.now(), nombre, descripcion, parteCuerpo, elemento));
+  StorageService.save("ejerciciosBase", ejercicios);
+  renderEjerciciosFiltrados();
 }
 
-function actualizarEjercicio(id, nombre, descripcion) {
-  let ejercicios = StorageService.load("ejercicios", []);
-  ejercicios = ejercicios.map(e => e.id === id ? { ...e, nombre, descripcion } : e);
-  StorageService.save("ejercicios", ejercicios);
-  renderEjercicios(ejercicios);
+function actualizarEjercicio(id, nombre, descripcion, parteCuerpo, elemento) {
+  let ejercicios = StorageService.load("ejerciciosBase", []);
+  ejercicios = ejercicios.map(e => e.id === id ? { ...e, nombre, descripcion, parteCuerpo, elemento } : e);
+  StorageService.save("ejerciciosBase", ejercicios);
+  renderEjerciciosFiltrados();
 }
 
 function eliminarEjercicio(id) {
-  let ejercicios = StorageService.load("ejercicios", []);
+  let ejercicios = StorageService.load("ejerciciosBase", []);
   ejercicios = ejercicios.filter(e => e.id !== id);
-  StorageService.save("ejercicios", ejercicios);
-  renderEjercicios(ejercicios);
+  StorageService.save("ejerciciosBase", ejercicios);
+  renderEjerciciosFiltrados();
 }
 
 function cargarFormularioEjercicio(ejercicio) {
