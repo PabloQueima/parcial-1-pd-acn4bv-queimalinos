@@ -8,12 +8,13 @@ import { DOMUtils } from "../ui/dom.js";
 let editandoSesionId = null;
 let filtroSesiones = "";
 
-// Filtros y paginación de ejercicios
+// Filtros de ejercicios
 let filtroEjercicioNombre = "";
 let filtroEjercicioBodyPart = "";
 let filtroEjercicioEquipment = "";
-let paginaEjercicios = 1;
-const ejerciciosPorPagina = 10;
+
+// Ejercicios seleccionados para la sesión (persisten aunque se cambie el filtro)
+let ejerciciosSeleccionados = [];
 
 /**
  * Inicializa el módulo de sesiones.
@@ -34,20 +35,17 @@ export const initSesiones = async () => {
     // Filtros de ejercicios
     document.getElementById("filtro-ejercicio-nombre")?.addEventListener("keyup", (e) => {
       filtroEjercicioNombre = e.target.value.toLowerCase();
-      paginaEjercicios = 1;
-      renderCheckboxesEjercicios();
+      renderListaEjercicios();
     });
 
     document.getElementById("filtro-ejercicio-bodypart")?.addEventListener("change", (e) => {
       filtroEjercicioBodyPart = e.target.value;
-      paginaEjercicios = 1;
-      renderCheckboxesEjercicios();
+      renderListaEjercicios();
     });
 
     document.getElementById("filtro-ejercicio-equipment")?.addEventListener("change", (e) => {
       filtroEjercicioEquipment = e.target.value;
-      paginaEjercicios = 1;
-      renderCheckboxesEjercicios();
+      renderListaEjercicios();
     });
 
     // Formulario principal
@@ -60,7 +58,6 @@ export const initSesiones = async () => {
         return;
       }
 
-      const ejerciciosSeleccionados = obtenerEjerciciosSeleccionados();
       if (ejerciciosSeleccionados.length === 0) {
         alert("Debes agregar al menos un ejercicio a la sesión.");
         return;
@@ -74,8 +71,10 @@ export const initSesiones = async () => {
         guardarSesion(titulo, clienteId, ejerciciosSeleccionados);
       }
 
+      ejerciciosSeleccionados = [];
       e.target.reset();
-      renderCheckboxesEjercicios();
+      renderListaEjercicios();
+      renderEjerciciosSeleccionados();
     });
 
     // Asegurar estructura inicial
@@ -84,7 +83,8 @@ export const initSesiones = async () => {
     }
 
     renderClientesSelect();
-    renderCheckboxesEjercicios();
+    renderListaEjercicios();
+    renderEjerciciosSeleccionados();
     renderSesiones();
 
   } catch (error) {
@@ -113,15 +113,14 @@ const renderClientesSelect = () => {
 };
 
 /* ============================================================
-   EJERCICIOS DISPONIBLES CON FILTROS Y PAGINACIÓN
+   LISTA DE EJERCICIOS FILTRABLE
    ============================================================ */
-const renderCheckboxesEjercicios = () => {
+const renderListaEjercicios = () => {
   const contenedor = document.getElementById("ejercicios-sesion");
   if (!contenedor) return;
 
   let ejercicios = StorageService.load("ejerciciosBase", []);
 
-  // Aplicar filtros
   if (filtroEjercicioNombre)
     ejercicios = ejercicios.filter(e => e.nombre.toLowerCase().includes(filtroEjercicioNombre));
   if (filtroEjercicioBodyPart)
@@ -129,12 +128,9 @@ const renderCheckboxesEjercicios = () => {
   if (filtroEjercicioEquipment)
     ejercicios = ejercicios.filter(e => e.elemento === filtroEjercicioEquipment);
 
-  // Paginación
-  const inicio = (paginaEjercicios - 1) * ejerciciosPorPagina;
-  const paginados = ejercicios.slice(inicio, inicio + ejerciciosPorPagina);
-
   contenedor.innerHTML = "";
-  paginados.forEach((e) => {
+
+  ejercicios.forEach((e) => {
     const wrapper = document.createElement("div");
     wrapper.className = "checkbox-item";
 
@@ -143,75 +139,97 @@ const renderCheckboxesEjercicios = () => {
     checkbox.id = `ej-${e.id}`;
     checkbox.value = e.id;
 
+    // Mantener checkeo si ya está seleccionado
+    checkbox.checked = ejerciciosSeleccionados.some(sel => sel.id === e.id);
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        agregarEjercicioSeleccionado(e);
+      } else {
+        quitarEjercicioSeleccionado(e.id);
+      }
+      renderEjerciciosSeleccionados();
+    });
+
     const label = document.createElement("label");
     label.textContent = e.nombre;
     label.setAttribute("for", checkbox.id);
 
-    const inputSeries = document.createElement("input");
-    inputSeries.type = "number"; inputSeries.min = 1; inputSeries.max = 10;
-    inputSeries.placeholder = "Series"; inputSeries.classList.add("series-input"); inputSeries.disabled = true;
-
-    const inputReps = document.createElement("input");
-    inputReps.type = "number"; inputReps.min = 1; inputReps.max = 50;
-    inputReps.placeholder = "Reps"; inputReps.classList.add("reps-input"); inputReps.disabled = true;
-
-    checkbox.addEventListener("change", () => {
-      const enabled = checkbox.checked;
-      inputSeries.disabled = !enabled;
-      inputReps.disabled = !enabled;
-      if (!enabled) { inputSeries.value = ""; inputReps.value = ""; }
-    });
-
-    wrapper.append(checkbox, label, inputSeries, inputReps);
+    wrapper.append(checkbox, label);
     contenedor.appendChild(wrapper);
   });
-
-  renderPaginacionEjercicios(ejercicios.length);
 };
 
-const renderPaginacionEjercicios = (total) => {
-  const container = document.getElementById("paginacion-ejercicios-sesion");
-  if (!container) return;
+/* ============================================================
+   EJERCICIOS SELECCIONADOS PARA LA SESIÓN
+   ============================================================ */
+const renderEjerciciosSeleccionados = () => {
+  const contenedor = document.getElementById("ejercicios-seleccionados");
+  if (!contenedor) return;
 
-  container.innerHTML = "";
-  const totalPaginas = Math.ceil(total / ejerciciosPorPagina);
+  contenedor.innerHTML = "";
+  if (ejerciciosSeleccionados.length === 0) {
+    contenedor.textContent = "No hay ejercicios seleccionados.";
+    return;
+  }
 
-  const btnPrev = document.createElement("button");
-  btnPrev.textContent = "Anterior";
-  btnPrev.disabled = paginaEjercicios === 1;
-  btnPrev.addEventListener("click", () => { if (paginaEjercicios > 1) { paginaEjercicios--; renderCheckboxesEjercicios(); } });
+  ejerciciosSeleccionados.forEach((e) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "seleccionado-item";
 
-  const btnNext = document.createElement("button");
-  btnNext.textContent = "Siguiente";
-  btnNext.disabled = paginaEjercicios >= totalPaginas;
-  btnNext.addEventListener("click", () => { if (paginaEjercicios < totalPaginas) { paginaEjercicios++; renderCheckboxesEjercicios(); } });
+    const nombre = document.createElement("span");
+    nombre.textContent = e.nombre;
 
-  const span = document.createElement("span");
-  span.textContent = ` Página ${paginaEjercicios} de ${totalPaginas} `;
+    const inputSeries = document.createElement("input");
+    inputSeries.type = "number";
+    inputSeries.min = 1;
+    inputSeries.max = 10;
+    inputSeries.value = e.series || 1;
+    inputSeries.className = "series-input";
+    inputSeries.addEventListener("input", (ev) => {
+      e.series = Number(ev.target.value) || 1;
+    });
 
-  container.append(btnPrev, span, btnNext);
-};
+    const inputReps = document.createElement("input");
+    inputReps.type = "number";
+    inputReps.min = 1;
+    inputReps.max = 50;
+    inputReps.value = e.reps || 10;
+    inputReps.className = "reps-input";
+    inputReps.addEventListener("input", (ev) => {
+      e.reps = Number(ev.target.value) || 10;
+    });
 
-/**
- * Devuelve un array con los ejercicios seleccionados,
- * incluyendo series y repeticiones.
- */
-const obtenerEjerciciosSeleccionados = () => {
-  const seleccionados = [];
-  document.querySelectorAll("#ejercicios-sesion .checkbox-item").forEach((item) => {
-    const checkbox = item.querySelector("input[type='checkbox']");
-    const series = item.querySelector(".series-input").value;
-    const reps = item.querySelector(".reps-input").value;
+    const btnQuitar = document.createElement("button");
+    btnQuitar.textContent = "❌";
+    btnQuitar.title = "Quitar ejercicio";
+    btnQuitar.addEventListener("click", () => {
+      quitarEjercicioSeleccionado(e.id);
+      renderListaEjercicios();
+      renderEjerciciosSeleccionados();
+    });
 
-    if (checkbox.checked) {
-      seleccionados.push({
-        id: Number(checkbox.value),
-        series: Number(series) || 0,
-        reps: Number(reps) || 0,
-      });
-    }
+    wrapper.append(nombre, inputSeries, inputReps, btnQuitar);
+    contenedor.appendChild(wrapper);
   });
-  return seleccionados;
+};
+
+/* ============================================================
+   FUNCIONES DE MANEJO DE EJERCICIOS SELECCIONADOS
+   ============================================================ */
+const agregarEjercicioSeleccionado = (ejercicio) => {
+  if (!ejerciciosSeleccionados.some(e => e.id === ejercicio.id)) {
+    ejerciciosSeleccionados.push({
+      id: ejercicio.id,
+      nombre: ejercicio.nombre,
+      series: 1,
+      reps: 10
+    });
+  }
+};
+
+const quitarEjercicioSeleccionado = (id) => {
+  ejerciciosSeleccionados = ejerciciosSeleccionados.filter(e => e.id !== id);
 };
 
 /* ============================================================
@@ -307,20 +325,18 @@ const cargarFormularioSesion = (sesion) => {
   editandoSesionId = sesion.id;
   document.querySelector("#form-sesion button").textContent = "Actualizar Sesión";
 
-  // Marcar ejercicios actuales
-  renderCheckboxesEjercicios();
-  if (Array.isArray(sesion.ejercicios)) {
-    sesion.ejercicios.forEach((e) => {
-      const checkbox = document.querySelector(`#ej-${e.id}`);
-      const inputSeries = checkbox?.parentElement.querySelector(".series-input");
-      const inputReps = checkbox?.parentElement.querySelector(".reps-input");
-      if (checkbox) {
-        checkbox.checked = true;
-        if (inputSeries) { inputSeries.disabled = false; inputSeries.value = e.series; }
-        if (inputReps) { inputReps.disabled = false; inputReps.value = e.reps; }
-      }
-    });
-  }
+  ejerciciosSeleccionados = sesion.ejercicios.map(e => {
+    const ejercicioBase = StorageService.load("ejerciciosBase", []).find(ex => ex.id === e.id);
+    return {
+      id: e.id,
+      nombre: ejercicioBase ? ejercicioBase.nombre : "Ejercicio desconocido",
+      series: e.series,
+      reps: e.reps
+    };
+  });
+
+  renderListaEjercicios();
+  renderEjerciciosSeleccionados();
 };
 
 /* ============================================================

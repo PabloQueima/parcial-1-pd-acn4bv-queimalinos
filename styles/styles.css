@@ -1,185 +1,163 @@
-/* ==============================
-   VARIABLES DE COLOR Y FUENTE
-   ============================== */
+/* --- Tipografía y colores base --- */
 :root {
   --celeste: #05A3CB;
   --lila: #BB81B6;
   --azul-oscuro: #15114D;
   --azul-intermedio: #0C3264;
   --blanco: #FFFFFF;
-  --gris-fondo: #F4F7FB;
-  --gris-suave: #EEF3F8;
-  --gris-borde: #D8E0EB;
-  --rojo: #D9534F;
-  --sombra: rgba(0, 0, 0, 0.08);
-  --transicion: 0.25s ease;
-  --fuente-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --gris-fondo: #f4f7fb;
+  --gris-suave: #eef3f8;
 }
 
-/* ==============================
-   ESTILOS BASE
-   ============================== */
 body {
-  font-family: var(--fuente-base);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--gris-fondo);
-  color: var(--azul-oscuro);
   margin: 0;
   padding: 0;
-  line-height: 1.5;
-  transition: background var(--transicion), color var(--transicion);
+  color: var(--azul-oscuro);
 }
 
-/* ==============================
-   HEADER
-   ============================== */
+/* --- Header con logo --- */
 header {
   background: linear-gradient(135deg, var(--celeste), var(--azul-intermedio));
   color: var(--blanco);
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  padding: 20px;
   text-align: center;
+  position: relative;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 header img {
+  max-height: 60px;
   position: absolute;
-  top: 50%;
-  left: 1.5rem;
-  transform: translateY(-50%);
-  height: 60px;
-  width: auto;
+  top: 15px;
+  left: 25px;
 }
 
 header h1 {
-  font-size: 2rem;
   margin: 0;
+  font-size: 2rem;
   letter-spacing: 1px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* ==============================
-   CONTENEDOR PRINCIPAL
-   ============================== */
+/* --- Contenedor principal --- */
 .container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 2rem;
-  padding: 2.5rem;
-  justify-content: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 25px;
+  padding: 40px;
+  flex-wrap: wrap;
 }
 
-/* ==============================
-   PANEL GENÉRICO
-   ============================== */
+/* --- Paneles (usuarios / ejercicios / sesiones) --- */
 .panel {
+  flex: 1;
+  min-width: 300px;
   background: var(--blanco);
-  padding: 1.8rem;
-  border-radius: 14px;
-  box-shadow: 0 4px 12px var(--sombra);
-  transition: transform var(--transicion), box-shadow var(--transicion);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .panel:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12);
 }
 
 .panel h2 {
   color: var(--azul-intermedio);
   margin-top: 0;
-  margin-bottom: 1rem;
-  border-bottom: 3px solid var(--celeste);
-  padding-bottom: 0.5rem;
-  font-size: 1.3rem;
+  margin-bottom: 15px;
+  border-bottom: 2px solid var(--celeste);
+  padding-bottom: 5px;
 }
 
-/* ==============================
-   FORMULARIOS
-   ============================== */
+/* --- Formularios --- */
 form {
+  margin-bottom: 20px;
   display: flex;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-bottom: 1.2rem;
 }
 
-input,
-select,
-button {
-  font-family: inherit;
-  font-size: 0.95rem;
-  border-radius: 8px;
-  transition: all var(--transicion);
-}
-
-input,
-select {
-  flex: 1;
-  min-width: 140px;
+form input,
+form select {
   padding: 10px;
-  border: 1px solid var(--gris-borde);
-  background: var(--blanco);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  flex: 1;
+  font-size: 0.95rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus,
-select:focus {
-  border-color: var(--celeste);
-  box-shadow: 0 0 5px rgba(5,163,203,0.4);
+form input:focus,
+form select:focus {
   outline: none;
+  border: 1px solid var(--celeste);
+  box-shadow: 0 0 4px rgba(5,163,203,0.3);
 }
 
-button {
+form button {
+  padding: 10px 18px;
+  border: none;
   background: var(--celeste);
   color: var(--blanco);
-  border: none;
-  padding: 10px 18px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  text-transform: uppercase;
+  transition: background 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
 }
 
-button:hover {
+form button:hover {
   background: var(--azul-intermedio);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-/* ==============================
-   LISTAS Y ELEMENTOS
-   ============================== */
+/* --- Listas y elementos --- */
 ul {
   list-style: none;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
 li {
   background: var(--gris-suave);
-  margin-bottom: 0.7rem;
-  padding: 0.8rem 1rem;
+  margin-bottom: 10px;
+  padding: 12px 15px;
   border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px var(--sombra);
-  transition: background var(--transicion), transform var(--transicion);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
 li:hover {
-  background: #e6f3fa;
   transform: translateX(3px);
+  background: #eaf3fb;
 }
 
-/* Botones dentro de listas */
 li button {
+  margin-left: 8px;
+  padding: 6px 10px;
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 0.85rem;
   cursor: pointer;
-  transition: transform var(--transicion), opacity var(--transicion);
+  font-size: 0.85rem;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+li button:first-of-type {
+  background: var(--lila);
+  color: var(--blanco);
+}
+
+li button:last-of-type {
+  background: #d9534f;
+  color: var(--blanco);
 }
 
 li button:hover {
@@ -187,27 +165,15 @@ li button:hover {
   transform: scale(1.05);
 }
 
-li button.edit {
-  background: var(--lila);
-  color: var(--blanco);
-}
-
-li button.delete {
-  background: var(--rojo);
-  color: var(--blanco);
-}
-
-/* ==============================
-   TARJETAS DE SESIONES
-   ============================== */
+/* --- Tarjetas de sesiones --- */
 #lista-sesiones .card {
-  background: var(--blanco);
-  border: 1px solid var(--gris-borde);
+  border: 1px solid #e0e0e0;
   border-radius: 12px;
-  padding: 1.2rem;
-  margin-bottom: 1rem;
-  box-shadow: 0 3px 8px var(--sombra);
-  transition: transform var(--transicion);
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: var(--blanco);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
 }
 
 #lista-sesiones .card:hover {
@@ -215,92 +181,65 @@ li button.delete {
 }
 
 #lista-sesiones .card h3 {
-  color: var(--azul-intermedio);
   margin-top: 0;
+  color: var(--azul-intermedio);
 }
 
 #lista-sesiones .ejercicios-lista {
-  padding-left: 1.2rem;
-  margin: 0.8rem 0;
+  margin: 12px 0;
+  padding-left: 20px;
 }
 
 #lista-sesiones .acciones {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.8rem;
+  margin-top: 12px;
 }
 
-/* ==============================
-   CHECKBOXES DE EJERCICIOS
-   ============================== */
+#lista-sesiones button {
+  margin-right: 10px;
+}
+
+/* --- Checkboxes --- */
 .ejercicios-checkboxes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 1rem 0;
+  gap: 12px;
+  margin: 12px 0;
 }
 
-.checkbox-item {
+.ejercicios-checkboxes .checkbox-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
   background: #eef5fb;
+  padding: 8px 12px;
+  border-radius: 6px;
   border: 1px solid #d0e3f0;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all var(--transicion);
+  transition: background 0.2s ease, transform 0.1s ease;
 }
 
-.checkbox-item:hover {
+.ejercicios-checkboxes .checkbox-item:hover {
   background: #d6ecfa;
-  transform: scale(1.03);
+  transform: scale(1.02);
 }
 
-/* ==============================
-   PAGINACIÓN
-   ============================== */
-.paginacion {
-  display: flex;
-  justify-content: center;
-  gap: 0.4rem;
-  margin-top: 1rem;
-}
-
-.paginacion button {
-  padding: 6px 12px;
-  background: var(--lila);
-  color: var(--blanco);
-  border: none;
-  border-radius: 6px;
-}
-
-.paginacion button:hover {
-  background: var(--celeste);
-}
-
-/* ==============================
-   RESPONSIVE DESIGN
-   ============================== */
-@media (max-width: 900px) {
-  header {
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .container {
     flex-direction: column;
-    text-align: center;
-    padding: 1rem;
+    padding: 20px;
+  }
+  
+  .panel {
+    width: 100%;
   }
 
   header img {
     position: static;
-    transform: none;
-    margin-bottom: 0.5rem;
+    display: block;
+    margin: 0 auto 10px;
   }
 
-  .container {
-    padding: 1.5rem;
-    grid-template-columns: 1fr;
-  }
-
-  form {
-    flex-direction: column;
+  header h1 {
+    font-size: 1.5rem;
   }
 }
