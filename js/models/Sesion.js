@@ -1,18 +1,20 @@
 // Clase Sesion de entrenamiento
 export default class Sesion {
-  constructor(id, titulo, entrenadorId, clienteId) {
+  constructor(id, titulo, entrenadorId, clienteId, ejerciciosAsignados = []) {
     this.id = id;
     this.titulo = titulo;
     this.entrenadorId = entrenadorId;
     this.clienteId = clienteId;
-    this.ejercicios = [];
+    this.ejerciciosAsignados = ejerciciosAsignados;
   }
 
-  agregarEjercicio(ejercicio) {
-    this.ejercicios.push(ejercicio);
+  agregarEjercicio(ejercicioId, nombre, series, repeticiones) {
+    this.ejerciciosAsignados.push({ ejercicioId, nombre, series, repeticiones });
   }
 
   listarEjercicios() {
-    return this.ejercicios.map(e => e.info());
+    return this.ejerciciosAsignados.map(
+      e => `${e.nombre} - ${e.series}x${e.repeticiones}`
+    );
   }
 }
