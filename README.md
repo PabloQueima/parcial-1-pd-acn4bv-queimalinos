@@ -11,8 +11,7 @@ Gestión de Usuarios
 
 Gestión de Ejercicios
 - CRUD completo.
-- Consumo de la API pública ExerciseDB.
-- Carga inicial de datos demo en caso de error de conexión.
+- Consumo de la API simulada con JSON Blob.
 
 Gestión de Sesiones de Entrenamiento
 - Crear sesiones para clientes seleccionando ejercicios.
@@ -20,7 +19,6 @@ Gestión de Sesiones de Entrenamiento
 - Visualizar en tarjetas con detalle de cliente y ejercicios asignados.
 
 Filtros y búsqueda en usuarios, ejercicios y sesiones.
-
 ---
 ## Diseño
 - Paleta de colores:
@@ -37,7 +35,7 @@ Filtros y búsqueda en usuarios, ejercicios y sesiones.
 ## Tecnologías
 HTML, CSS, JS
 - LocalStorage para persistencia.
-- ExerciseDB API para carga de ejercicios.
+- JSON Blob para simular API para carga de ejercicios.
 
 Arquitectura modular:
 - /models → Clases Usuario, Ejercicio, Sesion.
@@ -57,9 +55,8 @@ app.js → punto de entrada que inicializa todos los controladores.
 
 ---
 ## Próximos pasos
-- Agregar ejercicios determinados a una sesion
-- Separar tableros según perfil del usuario (admin, entrenador, cliente)
-- Incorporar descripción, series, repeticiones e imágenes de los ejercicios
 - Autenticación básica de usuarios.
-
+- Separar tableros según perfil del usuario (admin, entrenador, cliente)
+- Incorporar imágenes de los ejercicios.
+- 
 ---
