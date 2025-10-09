@@ -58,5 +58,4 @@ app.js → punto de entrada que inicializa todos los controladores.
 - Autenticación básica de usuarios.
 - Separar tableros según perfil del usuario (admin, entrenador, cliente)
 - Incorporar imágenes de los ejercicios.
-- 
 ---
